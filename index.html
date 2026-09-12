@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy 2nd Anniversary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f5f5f5;
+            --gold: #d4af37;
+            --heart-color: #8B0000;
+            --envelope-bg: #262626;
+            --paper-color: #fdf6e3;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; font-weight: normal; }
+        .gold { color: var(--gold); }
+        .handwriting { font-family: 'Great Vibes', cursive; }
+
+        /* التحكم في الصوت */
+        #sound-control {
+            position: fixed; top: 15px; right: 15px;
+            background: rgba(0, 0, 0, 0.6); border: 1px solid var(--gold); color: var(--gold);
+            width: 45px; height: 45px; border-radius: 50%;
+            cursor: pointer; z-index: 4000; display: none;
+            justify-content: center; align-items: center; font-size: 1.3rem;
+        }
+
+        /* 1. شاشة القفل */
+        #lock-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background-color: #121212; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 5000;
+            transition: opacity 1.5s ease; padding: 20px;
+        }
+        #lock-screen.unlocked { opacity: 0; visibility: hidden; }
+
+        .heart-lock {
+            position: relative; width: 80px; height: 75px;
+            margin-bottom: 30px; animation: pulse 2s infinite;
+        }
+        .heart-lock::before, .heart-lock::after {
+            content: ""; position: absolute; top: 0; width: 42px; height: 65px;
+            background-color: var(--heart-color); border-radius: 40px 40px 0 0;
+        }
+        .heart-lock::before { left: 40px; transform: rotate(-45deg); transform-origin: 0 100%; }
+        .heart-lock::after { left: 0; transform: rotate(45deg); transform-origin: 100% 100%; }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        .lock-combination {
+            display: flex; gap: 10px; background: rgba(255, 255, 255, 0.05);
+            padding: 15px 25px; border-radius: 12px; border: 1px solid var(--gold);
+        }
+        .lock-box { display: flex; flex-direction: column; align-items: center; }
+        .lock-number {
+            font-size: 2rem; font-family: 'Playfair Display', serif; color: white;
+            cursor: pointer; width: 50px; text-align: center;
+        }
+
+        /* 2. الورد المتساقط */
+        #petals-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; display: none; overflow: hidden; }
+        .petal { position: absolute; width: 12px; height: 12px; background-color: #9e0000; border-radius: 12px 0; opacity: 0.8; animation: fall linear infinite; }
+        @keyframes fall {
+            0% { top: -10%; transform: rotate(0deg); }
+            100% { top: 100vh; transform: rotate(360deg); }
+        }
+
+        /* 3. المحتوى الأساسي */
+        #main-content { display: none; opacity: 0; transition: opacity 2s; padding-bottom: 50px; position: relative; z-index: 2; }
+        section { min-height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .hero-text { font-size: 2.2rem; margin-bottom: 15px; }
+
+        /* 4. الظرف والفيديو 3D */
+        .perspective-container { perspective: 1000px; width: 100%; max-width: 350px; margin-top: 20px; }
+        .card-3d { width: 100%; position: relative; transform-style: preserve-3d; transition: transform 1.2s; min-height: 400px; }
+        .card-3d.flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; padding: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid var(--gold); }
+        .card-front { background-color: var(--envelope-bg); }
+        .envelope-text { font-size: 1rem; line-height: 1.6; margin-bottom: 15px; }
+        .quote { font-family: 'Great Vibes', cursive; color: var(--gold); font-size: 2rem; margin-bottom: 15px; }
+        .secret-input { background: transparent; border: none; border-bottom: 1px solid var(--gold); color: white; font-size: 1.2rem; width: 70px; text-align: center; outline: none; margin: 15px 0; letter-spacing: 3px; }
+        .card-back { background-color: #000; transform: rotateY(180deg); padding: 5px; }
+        video { width: 100%; border-radius: 8px; }
+
+        /* 5. التايم لاين */
+        .timeline { width: 100%; margin-top: 40px; text-align: left; }
+        .timeline-item { padding: 0 0 30px 30px; border-left: 2px solid var(--gold); position: relative; margin-left: 10px; }
+        .timeline-item::before { content: ''; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; background: var(--bg-color); border: 2px solid var(--gold); border-radius: 50%; }
+        .timeline-date { color: var(--gold); font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; font-family: 'Playfair Display', serif; }
+        .timeline-item p { font-size: 1rem; color: #ccc; }
+
+        /* 6. الجواب النهائي (محسن للموبايل والارتفاع) */
+        .final-envelope-wrapper {
+            position: relative; width: 280px; height: 180px;
+            margin: 40px auto; cursor: pointer; perspective: 1000px;
+        }
+        .fe-body {
+            position: absolute; bottom: 0; width: 100%; height: 100%;
+            background-color: #6b0000; border-radius: 0 0 8px 8px;
+            z-index: 3; display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 15px; color: var(--gold); font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .fe-body::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            border-left: 140px solid transparent; border-right: 140px solid transparent;
+            border-bottom: 90px solid #8B0000; z-index: 4;
+        }
+        .fe-flap {
+            position: absolute; top: 0; left: 0;
+            border-left: 140px solid transparent; border-right: 140px solid transparent;
+            border-top: 90px solid #a30000; z-index: 5;
+            transform-origin: top; transition: transform 0.8s ease-in-out;
+        }
+        .final-envelope-wrapper.open .fe-flap { transform: rotateX(180deg); z-index: 1; }
+        
+        /* الورقة أطول والخط أوضح */
+        .fe-paper {
+            position: absolute; bottom: 5px; left: 10px; right: 10px;
+            height: 160px; background: var(--paper-color);
+            z-index: 2; transition: transform 1.5s ease 0.8s, height 1.5s ease 0.8s;
+            padding: 25px 15px; color: #111; border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2); overflow-y: auto;
+        }
+        .final-envelope-wrapper.open .fe-paper {
+            transform: translateY(-280px); /* تخرج لمسافة أبعد */
+            height: 450px; /* الارتفاع زاد عشان الكلام يبان */
+            z-index: 6;
+        }
+
+        #typed-text { color: #2c3e50; line-height: 1.6; font-size: 1.4rem; white-space: pre-wrap; }
+        .cursor { display: inline-block; width: 2px; height: 1.2rem; background: #2c3e50; animation: blink 0.7s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .fade-element { opacity: 0; transform: translateY(20px); transition: 1s ease-out; }
+        .fade-element.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 400px) {
+            .hero-text { font-size: 1.8rem; }
+            .final-envelope-wrapper.open .fe-paper { height: 420px; transform: translateY(-250px); }
+            #typed-text { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop><source src="song.mp3" type="audio/mpeg"></audio>
+    <audio id="tick-sound"><source src="tick.mp3" type="audio/mpeg"></audio>
+
+    <button id="sound-control" onclick="toggleMute()">🎵</button>
+
+    <div id="lock-screen">
+        <div class="heart-lock"></div>
+        <div class="lock-combination">
+            <div class="lock-box">
+                <span style="font-size:0.7rem; color:var(--gold)">DAY</span>
+                <span class="lock-number" id="val-day" onclick="changeNumber('val-day', 31)">01</span>
+            </div>
+            <div class="lock-box">
+                <span style="font-size:0.7rem; color:var(--gold)">MONTH</span>
+                <span class="lock-number" id="val-month" onclick="changeNumber('val-month', 12)">01</span>
+            </div>
+            <div class="lock-box">
+                <span style="font-size:0.7rem; color:var(--gold)">YEAR</span>
+                <span class="lock-number" id="val-year" onclick="changeNumber('val-year', 30)">20</span>
+            </div>
+        </div>
+        <p style="margin-top:15px; color:#888; font-size:0.9rem;">Tap numbers to set our day...</p>
+    </div>
+
+    <div id="petals-container"></div>
+
+    <div id="main-content">
+        <section>
+            <h1 class="hero-text fade-element">Happy 2nd Anniversary,<br><span class="gold">My Favorite Person</span></h1>
+        </section>
+
+        <section>
+            <h2 class="gold fade-element" style="font-size: 2.2rem; margin-bottom: 20px;">A Secret For You</h2>
+            <div class="perspective-container fade-element">
+                <div class="card-3d" id="secret-card">
+                    <div class="card-face card-front">
+                        <p class="envelope-text serif">I was not a lucky person, but since I found you, life began for me. I can easily say I've received the most precious gift from the universe...</p>
+                        <span class="quote">"My Precious"</span>
+                        <p style="font-size: 0.8rem; color: #aaa; font-style: italic;">Enter our secret code:</p>
+                        <input type="text" id="secret-input" class="secret-input" maxlength="3" placeholder="---">
+                        <button onclick="checkCode()" style="background:none; border:none; color:var(--gold); font-size:1.5rem;">&#10140;</button>
+                    </div>
+                    <div class="card-face card-back">
+                        <video id="my-video" controls playsinline><source src="video.mp4" type="video/mp4"></video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="gold fade-element" style="font-size: 2.2rem; margin-bottom: 30px;">Our Journey</h2>
+            <div class="timeline fade-element">
+                <div class="timeline-item">
+                    <div class="timeline-date">May 3, 2024</div>
+                    <p>The day it all started. The first time I saw that smile, and everything just clicked.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Our First Year</div>
+                    <p>Building our foundation, through every high and low, always together and growing stronger.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Today (730 Days)</div>
+                    <p>And I’d choose you all over again, every single day.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="gold fade-element" style="margin-bottom:20px; font-size: 2.2rem;">Read My Heart</h2>
+            <p class="fade-element" style="color: #888; font-style: italic;">Tap the envelope to open it.</p>
+            <div class="final-envelope-wrapper fade-element" id="final-envelope" onclick="openFinalEnvelope()">
+                <div class="fe-flap"></div>
+                <div class="fe-paper">
+                    <span id="typed-text" class="handwriting"></span><span class="cursor" id="typing-cursor" style="display:none;"></span>
+                </div>
+                <div class="fe-body handwriting">Open Me</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const targetDate = { day: '03', month: '05', year: '24' };
+        const bgMusic = document.getElementById('bg-music');
+        const tickSound = document.getElementById('tick-sound');
+        const myVideo = document.getElementById('my-video');
+
+        function changeNumber(id, max) {
+            tickSound.currentTime = 0; tickSound.play().catch(e => {});
+            let el = document.getElementById(id);
+            let val = parseInt(el.innerText);
+            val++;
+            if (id === 'val-year' && val > 30) val = 20; 
+            else if (val > max) val = 1; 
+            el.innerText = val.toString().padStart(2, '0');
+            checkLock();
+        }
+
+        function checkLock() {
+            if (document.getElementById('val-day').innerText === targetDate.day && 
+                document.getElementById('val-month').innerText === targetDate.month && 
+                document.getElementById('val-year').innerText === targetDate.year) {
+                document.getElementById('lock-screen').classList.add('unlocked');
+                bgMusic.play();
+                document.getElementById('sound-control').style.display = 'flex';
+                document.getElementById('petals-container').style.display = 'block';
+                createPetals();
+                document.getElementById('main-content').style.display = 'block';
+                setTimeout(() => { document.getElementById('main-content').style.opacity = '1'; triggerAnimations(); }, 500);
+            }
+        }
+
+        function createPetals() {
+            for (let i = 0; i < 30; i++) {
+                let p = document.createElement('div'); p.classList.add('petal');
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                p.style.animationDelay = Math.random() * 5 + 's';
+                document.getElementById('petals-container').appendChild(p);
+            }
+        }
+
+        function toggleMute() { bgMusic.paused ? bgMusic.play() : bgMusic.pause(); }
+        myVideo.onplay = () => bgMusic.pause();
+        myVideo.onended = () => bgMusic.play();
+
+        function checkCode() {
+            if (document.getElementById('secret-input').value === '224') {
+                document.getElementById('secret-card').classList.add('flipped');
+                setTimeout(() => myVideo.play(), 800);
+            } else { alert("Try our special code!"); }
+        }
+
+        const finalMessage = "My beautiful girl,\n\nEvery single second with you is a blessing I cherish. You are my safe place, my peace, and my forever adventure.\n\nYou are my best friend, my love, and my daughter.\n\nThank you for these magical 730 days. I promise to keep choosing you, every single day.\n\nI love you endlessly.";
+        let charIndex = 0;
+
+        function typeLetter() {
+            if (charIndex < finalMessage.length) {
+                document.getElementById('typed-text').innerHTML += finalMessage.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeLetter, 60);
+            } else { document.getElementById('typing-cursor').style.display = 'none'; }
+        }
+
+        function openFinalEnvelope() {
+            const env = document.getElementById('final-envelope');
+            if (!env.classList.contains('open')) {
+                env.classList.add('open');
+                setTimeout(() => { document.getElementById('typing-cursor').style.display = 'inline-block'; typeLetter(); }, 2200);
+            }
+        }
+
+        function triggerAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.fade-element').forEach(el => observer.observe(el));
+        }
+    </script>
+</body>
+</html>
